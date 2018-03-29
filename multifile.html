@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>文件多次上传</title>
+	<link rel="stylesheet" type="text/css" href="js/bootstrap.css">
+	<style type="text/css">
+		/* 多个文件上传显示 */
+		.fileshow{
+			margin-top: 5px;
+			margin-right: 15px;
+			background: #f5f5f5;
+			display: inline-block;
+			border-radius: 8px;
+			padding: 0 10px;
+			line-height: 35px;
+		}
+		.fileshow a{
+			margin-left: 10px;
+			font-size: 16px;
+			float: right;
+			line-height: 35px;
+		}
+		.fileshow a:hover{
+			cursor: pointer;
+		}
+		/* 多次上传文件 */
+		.multipleFile{
+			width: calc( 100% - 90px );
+			height: 35px;
+			border: 1px solid #a9a9a9;
+			line-height: 35px;
+			padding: 0 8px;
+			display: inline-block;
+		}
+		.chooseBtn{
+			height: 35px;
+			border: 1px solid #a9a9a9;
+			border-right: none;
+			line-height: 35px;
+			width: 70px;
+			text-align: center;
+			display: inline-block;
+		}
+	</style>
+</head>
+<body>
+	<div class="container" style="margin-top: 100px;">
+		<div class="row">
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 col-xs-2 tright">附件：</label>
+				<div class="col-sm-9 accessorys">
+		            <div class="fileOld">
+		              <div class="chooseBtn pull-left">选择文件</div><div class="multipleFile" data-name="accessorys" data-out="1" id="accessorys"></div>
+		            </div>					             
+		        </div>
+			</div>
+			<div class="col-sm-12 form-group">
+				<label class="col-sm-2 col-xs-2 tright">附件：</label>
+				<div class="col-sm-9 appendix">
+		            <div class="fileOld">
+		              <div class="chooseBtn pull-left">选择文件</div><div class="multipleFile" data-name="appendix" id="appendix"></div>
+		            </div>					             
+		        </div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="js/jquery-2.1.1.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		var contractReg = ".*\\.(pdf|doc|docx)";
+		var outReg = ".*\\.(doc|docx|ppt|pdf|xlsx|mp3|MP3|mp4|MP4|avi)";
+		/* 多次上传文件 */
+		$(".multipleFile").click(function(){
+			var $parent = $(this).parent();
+			var name = $(this).attr("data-name");
+			var out = $(this).attr("data-out");
+			var newFileInput = "<div class='fileshow'><span class='singleName'></span><a class='delete-btn glyphicon glyphicon-remove-circle' onclick='delfile(this)'></a><input id='uploaderInput' type='file' name='"+name+"' style='display: none;' /></div>";
+			$(this).parent().append($(newFileInput));
+			//判断上一个上传的文件是否是空的
+			if($parent.find(".fileshow").eq(-2).find(".singleName").text() == ""){
+				$parent.find(".fileshow").eq(-2).remove();
+			}
+		    $("#uploaderInput").bind("change", function(e){
+		    	var singleName = $(this)[0].files[0].name;//上传文件的文件名
+		    	//文件上传验证（判断上传的文件是否是合同流转中的文件）
+		    	if(out == 1){
+		    		if(singleName.match(outReg) == null){
+		    			// parent.layer.alert("您上传的文件格式不正确！", {icon: 0});
+		    			alert("您上传的文件格式不正确！")
+		        		$(this).parent().remove();
+		        		return false;
+		        	}
+		    	}else{
+		    		if(singleName.match(contractReg) == null){
+		        		// parent.layer.alert("您上传的文件格式不正确！", {icon: 0});
+		        		alert("您上传的文件格式不正确！")
+		        		$(this).parent().remove();
+		        		return false;
+		        	}
+		    	}
+		    	$(this).parent().find(".singleName").text(singleName);//将上传的文件名显示在上传文件的文本框中
+		    	totalfile(singleName, $(this));//将上传的多个文件名显示到页面上
+		    	$(this).removeAttr("id");
+		    });
+		    $("#uploaderInput").click();
+		});
+		// 删除文件
+		function delfile(obj){
+			var $filediv = $(obj).parent().parent().find(".multipleFile");//获取当前上传控件
+			var delname = $(obj).parent().find('.singleName').text();//删除的文件
+			var singlename = $filediv.text().split(";");
+		// 	当前文件删除之后，及时更新文件域中的选择的文件
+		 	for(var i = 0; i < singlename.length; i++){
+		 		if(singlename[i] == delname){
+		 			index = i;
+		 		}
+		 	}
+		 	delete singlename[index];
+		 	singlename = singlename.toString().replace(/,/g, ';');//将文件的分割符修改为；
+		// 	如果删除的是第一个文件
+		 	if(index == 0){
+		 		singlename = singlename.substr(1);
+		 	}
+		 	singlename = singlename.replace(/;;/g, ';');//如果文件从中间或最后删除
+		// 	如果文件都删除了
+		 	if(singlename == ";"){
+		 		singlename = '';
+		 	}
+		 	$filediv.text(singlename);
+			$(obj).parent().remove();
+		}
+		//所有上传文件的文件名
+		function totalfile(obj, that){
+			var $filediv = $(that).parent().parent().find(".multipleFile");//获取当前上传控件
+			var text = $filediv.text();
+			$filediv.text(text+obj+";");
+		}
+		/* 多次上传文件 */
+	</script>
+</body>
+</html>
